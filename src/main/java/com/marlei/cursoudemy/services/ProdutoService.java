@@ -5,7 +5,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.marlei.cursoudemy.model.Produto;
-import com.marlei.cursoudemy.repository.ProdutoRepository_old;
+import com.marlei.cursoudemy.repository.ProdutoRepository;
+
 import com.marlei.cursoudemy.shared.ProdutoDTO;
 
 import org.modelmapper.ModelMapper;
@@ -16,19 +17,19 @@ import org.springframework.stereotype.Service;
 public class ProdutoService {
    
     @Autowired  
-    private ProdutoRepository_old produtoRepository;
+    private ProdutoRepository produtoRepository;
     /**
      * metodo para retorna uma lista de produtos
      * @return lista de produtos
      */
     public List<ProdutoDTO> obterTodos(){
         //colocar regra aqui caso tenha...
-        List<Produto> produtos = produtoRepository.obterTodos();
+        List<Produto> produtos = produtoRepository.findAll();
         return produtos.stream().map(produto -> new ModelMapper().map(produto, ProdutoDTO.class)).collect(Collectors.toList());
     }
     public Optional<ProdutoDTO> obterPorId(Integer id){
         //obtendo optional de produto pelo id.
-       Optional<Produto> produto = produtoRepository.obterPorId(id);//se encontrar vai devolver um produto
+       Optional<Produto> produto = produtoRepository.findById(id);//se encontrar vai devolver um produto
        if(produto.isEmpty()){ //se não tiver produto ele vai retorna o system.out.println
            System.out.println("Produto com id" + id + "não econtrado");
         }
@@ -46,7 +47,7 @@ public class ProdutoService {
         Produto produto = mapper.map(produtoDto, Produto.class);
 
         //salvar o produto no banco
-        produto = produtoRepository.adicionar(produto);
+        produto = produtoRepository.save(produto);
         produtoDto.setId(produto.getId());
         
 
@@ -58,13 +59,13 @@ public class ProdutoService {
     }
     public void deletar(Integer id){
         //verificar se o produto existe
-        Optional<Produto> produto = produtoRepository.obterPorId(id);
+        Optional<Produto> produto = produtoRepository.findById(id);
         //se não existir lança uma expection
         if(produto.isEmpty()){
             System.out.println("não foi possivel deletar o produto com o id: " + id + "produto não existe");
 
         }
-        produtoRepository.deletar(id);
+        produtoRepository.deleteById(id);
     }
     public ProdutoDTO atualizar(Integer id, ProdutoDTO produtoDto){
         //passar o id para o produtodto 
@@ -78,7 +79,7 @@ public class ProdutoService {
         Produto produto = mapper.map(produtoDto, Produto.class);
 
         //atualizar o produto no banco de dados.
-        produtoRepository.atualizar(produto);
+        produtoRepository.save(produto);
 
         //retornar o produtoDto atualizado
         return produtoDto;
